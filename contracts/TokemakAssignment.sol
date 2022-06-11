@@ -11,24 +11,33 @@ import "./interfaces/IManager.sol";
 import "./interfaces/ILiquidityPool.sol";
 import "./interfaces/UniswapV2Library.sol";
 
+// @title Tokemak's UNI LP auto-compound
+// @author Suryansh
 contract TokemakAssignment is OwnableUpgradeable, IRewards {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     IUniswapV2Pair public univ2LpTokensPairs;
     IERC20Upgradeable public tokematAsset;
     IERC20Upgradeable public wethAsset;
+    // @dev Tokemak's contract dependencies
     IRewards public tokemakRwrdContract;
     IManager public tokemakManager;
     ILiquidityPool public tokemakUniLpPool;
     IUniswapV2Router02 public uniswapV2Router02;
     uint256 public stakes;
 
-    //events
+    // @dev events to store data points
     event Deposit(address _investor, uint256 _amount);
     event Stake(address _investor, uint256 _amount);
     event Withdraw(address _investor, uint256 _amount);
     event RequestWithdraw(address _investor, uint256 _amount);
 
+    // @dev returns the contract instance with injected dependencies
+    // @param _wethAddress Wrapped Eth address
+    // @param _tokemakRwrdContractAddress Tokemak rewards controller address
+    // @param _tokemakManagerContractAddress Tokemak main manager controller address
+    // @param _tokemakUniLpPoolAddress Tokemak uniswap LP pool address
+    // @param _uniswapV2Router02Address
     function init(
         address _tokemakUniLpPoolAddress,
         address _tokemakRwrdContractAddress,
@@ -48,7 +57,8 @@ contract TokemakAssignment is OwnableUpgradeable, IRewards {
         uniswapV2Router02 = IUniswapV2Router02(_uniswapV2Router02Address);
     }
 
-    // Deposit UNI LP tokens into contract
+    // @dev deDeposit UNI LP tokens into contract
+    // @param _amount number of tokens to deposit
     function deposits(uint256 _amount) public {
         require(_amount > 0, "Deposit amount is invalid");
         univ2LpTokensPairs.approve(address(uniswapV2Router02), _amount);
@@ -84,7 +94,16 @@ contract TokemakAssignment is OwnableUpgradeable, IRewards {
         return tokemakRwrdContract.getClaimableAmount(recipient);
     }
 
-    // Auto-compound 
+    // @notice Auto-compound call to claim and re-stake rewards
+    // @dev Function call execute the following steps:
+    // @dev 1.- Check for positive amount of toke rewards in current cycle
+    // @dev 2.- Claim TOKE rewards
+    // @dev 3.- Swap needed amount of total TOKE rewards to form token pair TOKE-ETH
+    // @dev 4.- Provide liquidity to UniswapV2 to TOKE-ETH pool & Receive UNIV2 LP Token
+    // @dev 5.- Stake UNIV2 LP Token into TOKEMAK Uni LP Token Pool
+    // @param v ECDSA signature,
+    // @param r ECDSA signature,
+    // @param s ECDSA signature,
     function autoCompound(
         Recipient memory recipient,
         uint8 v,
@@ -96,10 +115,7 @@ contract TokemakAssignment is OwnableUpgradeable, IRewards {
         if (claimableRwrds > 0) {
             this.claim(recipient, v, r, s);
             tokemakBalance = tokematAsset.balanceOf(address(this));
-            require(
-                tokemakBalance >= claimableRwrds,
-                "Failed"
-            );
+            require(tokemakBalance >= claimableRwrds, "Failed");
         }
         _buyWETH(tokemakBalance);
 
@@ -119,7 +135,7 @@ contract TokemakAssignment is OwnableUpgradeable, IRewards {
             address(tokematAsset),
             address(wethAsset)
         );
-        
+
         uint256 amountToSwap = calculateSwapInAmount(reserveA, _amount);
         address[] memory path = new address[](2);
         path[0] = address(tokematAsset);
@@ -128,7 +144,7 @@ contract TokemakAssignment is OwnableUpgradeable, IRewards {
         return swapExactTokens(amountToSwap, 0, path);
     }
 
-    //copied 
+    //copied
     function calculateSwapInAmount(uint256 reserveIn, uint256 userIn)
         internal
         pure
@@ -145,7 +161,10 @@ contract TokemakAssignment is OwnableUpgradeable, IRewards {
         uint256 amountOutMin,
         address[] memory path
     ) internal returns (uint256) {
-        IERC20Upgradeable(tokematAsset).approve(address(uniswapV2Router02), amountIn);
+        IERC20Upgradeable(tokematAsset).approve(
+            address(uniswapV2Router02),
+            amountIn
+        );
         return
             uniswapV2Router02.swapExactTokensForTokens(
                 amountIn,
@@ -156,8 +175,11 @@ contract TokemakAssignment is OwnableUpgradeable, IRewards {
             )[path.length - 1];
     }
 
-
-    //adding liquidity to existing pool
+    // @notice Uniswapv2 function to add liquidity to existing pool
+    // @param token0 1st pair asset address
+    // @param token1 2nd pair asset address
+    // @param amount0 Aount of 1st pair asset to add as liquidity
+    // @param amount1 Amount of 2nd pair asset to add as liquidity
     function addLiquidity(
         address token0,
         address token1,
@@ -185,12 +207,12 @@ contract TokemakAssignment is OwnableUpgradeable, IRewards {
         );
     }
 
-    //Claim
+    
     function claim(
         Recipient calldata recipient,
         uint8 v,
         bytes32 r,
-        bytes32 s 
+        bytes32 s
     ) external override {
         tokemakRwrdContract.claim(recipient, v, r, s);
     }
@@ -208,10 +230,7 @@ contract TokemakAssignment is OwnableUpgradeable, IRewards {
             minCycle > tokemakManager.getCurrentCycleIndex(),
             "Withdrawal unavailable."
         );
-        require(
-            _amount <= stakes,
-            "not enough funds"
-        );
+        require(_amount <= stakes, "not enough funds");
         stakes -= _amount;
         tokemakUniLpPool.withdraw(_amount);
         emit Withdraw(msg.sender, _amount);

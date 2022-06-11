@@ -57,7 +57,7 @@ contract TokemakAssignment is OwnableUpgradeable, IRewards {
         uniswapV2Router02 = IUniswapV2Router02(_uniswapV2Router02Address);
     }
 
-    // @dev deDeposit UNI LP tokens into contract
+    // @dev deposit UNI LP tokens into contract
     // @param _amount number of tokens to deposit
     function deposits(uint256 _amount) public {
         require(_amount > 0, "Deposit amount is invalid");

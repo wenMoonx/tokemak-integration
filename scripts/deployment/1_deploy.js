@@ -17,7 +17,7 @@ async function main() {
 
   // Deploy Contract
   const strategy = await Strategy.deploy();
-  await strategy.initialize(
+  await strategy.init(
     TOKEMAK_UNIV2_LP_TOKEN_POOL[netId],
     TOKEMAK_REWARDS_CONTRACT[netId],
     TOKEMAK_MANAGER_CONTRACT[netId],

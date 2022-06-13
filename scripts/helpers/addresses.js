@@ -1,6 +1,6 @@
 module.exports.TOKE_ETH_UNIV2_PAIR = {
-  "mainnet-fork": "0x5fa464cefe8901d66c09b85d5fcdc55b3738c688",
-  hardhat: "0x5fa464cefe8901d66c09b85d5fcdc55b3738c688",
+  "mainnet-fork": "0x5Fa464CEfe8901d66C09b85d5Fcdc55b3738c688",
+  hardhat: "0x5Fa464CEfe8901d66C09b85d5Fcdc55b3738c688",
 };
 
 module.exports.TOKE_ASSET = {

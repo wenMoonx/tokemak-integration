@@ -3,6 +3,8 @@ require("dotenv").config();
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-ethers");
 require("@openzeppelin/hardhat-upgrades");
+require("@nomiclabs/hardhat-web3");
+
 
 const CHAIN_IDS = {
   hardhat: 31337, // chain ID for hardhat testing

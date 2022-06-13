@@ -4,7 +4,8 @@ const BigNumber = require("bignumber.js");
 const hre = require("hardhat");
 const { sign } = require("./helpers/signatures")
 const ManagerABI = require("./abi/Manager.json")
-const IUniswapV2PairABI = require("./abi//IUniSwapV2Pair.json")
+const IUniswapV2PairABI = require("./abi/IUniSwapV2Pair.json")
+let provider ;
 function toBN(number) {
   return new BigNumber(number);
 }
@@ -18,7 +19,6 @@ const {
   UNIV2_ROUTER,
 } = require("../scripts/helpers/addresses.js");
 const { ethers } = require("hardhat");
-const { Signer } = require("ethers");
 
 let strategy;
 let netId = hre.network.name;
@@ -36,6 +36,7 @@ beforeEach(async function () {
   const StrategyInstance = await ethers.getContractFactory("TokemakAssignment");
   // uniLpToken = await ethers.getContractAt("UniswapV2Pair",TOKE_ETH_UNIV2_PAIR[netId]);
   // console.log(await uniLpToken.decimals())
+  provider = ethers.getDefaultProvider("https://eth-mainnet.alchemyapi.io/v2/m8GRUpgcN4LE6WT4zQh-FfazWbJWiWKW")
 
   strategy = await StrategyInstance.deploy();
   await strategy.init(
@@ -57,8 +58,8 @@ beforeEach(async function () {
 describe("Test initial deposits & stake", function () {
   it("Should deposit into Strategy", async function () {
 
-    // get UniswapV2 TOKE-ETH pair token
-    const uniLpToken = new ethers.Contract(TOKE_ETH_UNIV2_PAIR[netId], IUniswapV2PairABI, owner);
+    // get UniswapV2 TOKE-ETH pair tokenclea
+    const uniLpToken = new ethers.Contract(TOKE_ETH_UNIV2_PAIR[netId], IUniswapV2PairABI,provider.getSigner(owner.address));
 
     // Approve deposit
     await uniLpToken.approve(strategy.address, investmentAmount);
@@ -67,7 +68,7 @@ describe("Test initial deposits & stake", function () {
     await strategy.functions.deposits(TOKE_ETH_UNIV2_PAIR[netId], investmentAmount);
 
     // call Autocompound
-    await strategy.autoCompoundWithPermit();
+    await strategy.autoCompound();
 
     // Test owner's balance after deposit/farming
     const lpBalance = await uniLpToken.balanceOf(owner);
@@ -85,7 +86,7 @@ describe("Test Auto-compound with permit", function () {
 
     /** Signature ** */
     const buffer = Buffer.from(process.env.TEST_ETH_ACCOUNT_PRIVATE_KEY, "hex");
-    const manager = new ethers.Contract(TOKEMAK_MANAGER_CONTRACT[netId], ManagerABI, owner);
+    const manager = new ethers.Contract(TOKEMAK_MANAGER_CONTRACT[netId], ManagerABI, provider);
     const res = await manager.functions.getCurrentCycleIndex();
     console.log("manager: ", res)
 
@@ -117,7 +118,7 @@ describe("Test Auto-compound with permit", function () {
 
     /** Signature End ** */
 
-    const uniLpToken = new ethers.Contract(TOKE_ETH_UNIV2_PAIR[netId], IUniswapV2PairABI,owner);
+    const uniLpToken = new ethers.Contract(TOKE_ETH_UNIV2_PAIR[netId], IUniswapV2PairABI,provider);
     await strategy.autoCompound(
       signature.recipient,
       signature.v,

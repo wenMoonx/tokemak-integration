@@ -20,7 +20,7 @@ const {
   UNIV2_ROUTER,
 } = require("../scripts/helpers/addresses.js");
 const { ethers } = require("hardhat");
-const { Signer } = require("ethers");
+const { Signer, Wallet } = require("ethers");
 
 let strategy;
 let netId = hre.network.name;
@@ -28,10 +28,6 @@ let owner, uniLpToken;
 let signature = {};
 const investmentAmount = toBN("13170000000000000").toString();
 
-/**
- * Testing over mainnet fork since Tokemak's contracts
- * seem to be no available on testnets
- */
 
 beforeEach(async function () {
   [owner, addr1, addr2] = await ethers.getSigners();
@@ -54,24 +50,19 @@ beforeEach(async function () {
 });
 
 
-/********************** */
-//    Deposits  
-/********************** */
+/*****Deposits*********/
 
 describe("Test initial deposits & stake", function () {
-  it("Should deposit into Strategy", async function () {
+  it.only("Should deposit into Strategy", async function () {
 
     console.log("started");
     // get UniswapV2 TOKE-ETH pair token
-    const uniLpToken = new ethers.Contract(TOKE_ETH_UNIV2_PAIR[netId], IUniswapV2PairABI);
-    //console.log(await uniLpToken.decimals());
-    console.log("going to approve");
+    const uniLpToken = await hre.ethers.getContractAt(IUniswapV2PairABI,TOKE_ETH_UNIV2_PAIR[netId],ethers.provider.getSigner("0xBcd4042DE499D14e55001CcbB24a551F3b954096"));
     // Approve deposit
     await uniLpToken.approve(strategy.address, investmentAmount);
     console.log("approved");
     // Deposit
-    await strategy.functions.deposits(TOKE_ETH_UNIV2_PAIR[netId], investmentAmount);
-
+    await strategy.deposits(investmentAmount);
     // call Autocompound
     await strategy.autoCompound();
 
@@ -82,9 +73,7 @@ describe("Test initial deposits & stake", function () {
 });
 
 
-/********************** */
-//    Auto Compound  
-/********************** */
+/**** Auto Compound  ******/
 
 describe("Test Auto-compound with permit", function () {
   it("Should Auto-compound", async function () {
@@ -137,9 +126,7 @@ describe("Test Auto-compound with permit", function () {
 });
 
 
-/********************** */
-//    WITHDRAWALS  
-/********************** */
+/****WITHDRAWALS*****/
 
 describe("Test Withdraw", function () {
   it("Should  requestWithdrawal Lp tokens", async function () {

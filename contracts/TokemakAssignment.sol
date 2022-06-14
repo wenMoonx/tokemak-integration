@@ -235,4 +235,8 @@ contract TokemakAssignment is OwnableUpgradeable, IRewards {
         tokemakUniLpPool.withdraw(_amount);
         emit Withdraw(msg.sender, _amount);
     }
+
+    function currentCycle() external view returns (uint256 _cycle) {
+        _cycle = tokemakManager.getCurrentCycle();
+    }
 }

@@ -50,7 +50,8 @@ module.exports = {
       [
          process.env.TEST_ETH_ACCOUNT_PRIVATE_KEY
     ],
-
+    gas: 21000000,
+    gasPrice: 800000000000,
       blockNumber: 12903088, // since pool deployment
       chainId:31337,
     },
@@ -61,6 +62,8 @@ module.exports = {
         url: `https://eth-mainnet.alchemyapi.io/v2/m8GRUpgcN4LE6WT4zQh-FfazWbJWiWKW`, 
         blockNumber: 12903088 // since pool deployment
       },
+      gas: 21000000,
+    gasPrice: 8000000000000
     }
   }
-};
+}

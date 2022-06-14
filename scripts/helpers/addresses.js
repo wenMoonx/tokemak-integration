@@ -1,6 +1,6 @@
 module.exports.TOKE_ETH_UNIV2_PAIR = {
-  "mainnet-fork": "0x5Fa464CEfe8901d66C09b85d5Fcdc55b3738c688",
-  hardhat: "0x5Fa464CEfe8901d66C09b85d5Fcdc55b3738c688",
+  "mainnet-fork": "0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc",
+  hardhat: "0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc",
 };
 
 module.exports.TOKE_ASSET = {
@@ -19,8 +19,8 @@ module.exports.TOKEMAK_REWARDS_CONTRACT = {
 };
 
 module.exports.TOKEMAK_MANAGER_CONTRACT = {
-  "mainnet-fork": "0xA86e412109f77c45a3BC1c5870b880492Fb86A14",
-  hardhat: "0xA86e412109f77c45a3BC1c5870b880492Fb86A14",
+  "mainnet-fork": "0xf663F4b30dD18546cb71a607b7a89a36e92a244C",
+  hardhat: "0xf663F4b30dD18546cb71a607b7a89a36e92a244C",
 };
 
 module.exports.TOKEMAK_UNIV2_LP_TOKEN_POOL = {
